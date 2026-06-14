@@ -157,7 +157,7 @@ const C = { ID:0, NAME:1, AMOUNT:2, CATEGORY:3, DUEDATE:4, STARTDATE:5, PAYMETHO
   RECURRING:7, PAIDFROM:8, FREQUENCY:9, SPLIT:10, SPLITCOUNT:11, AMTPERSPLIT:12,
   STATUS:13, CANCELLEDDATE:14, NOTES:15, DATEADDED:16 };
 
-let tokenClient, accessToken = null, billRows = [], headerOffset = 1;
+let tokenClient, accessToken = null, billRows = [], headerOffset = 1, billTabName = BILL_TAB;
 
 window.onload = () => {
   const init = setInterval(() => {
@@ -194,9 +194,17 @@ async function loadAll() {
   show('loader'); hide('content'); hide('signin');
   try {
     const enc = encodeURIComponent;
+
+    // Resolve the real tab names first (handles emoji/spacing, e.g. "📊 Bill Summary")
+    const meta = await api(`${SHEET_ID}?fields=sheets.properties.title`);
+    const titles = (meta.sheets || []).map(s => s.properties.title);
+    const findTab = (want) => titles.find(t => t.toLowerCase().includes(want.toLowerCase())) || want;
+    billTabName = findTab(BILL_TAB);
+    const periodTabName = findTab(PERIOD_TAB);
+
     const [bills, period] = await Promise.all([
-      api(`${SHEET_ID}/values/${enc(BILL_TAB)}`),
-      api(`${SHEET_ID}/values/${enc(PERIOD_TAB)}!B2`).catch(()=>({}))
+      api(`${SHEET_ID}/values/${enc(billTabName)}`),
+      api(`${SHEET_ID}/values/${enc(periodTabName)}!B2`).catch(()=>({}))
     ]);
     const vals = bills.values || [];
     headerOffset = 1; // row 1 is header
@@ -294,7 +302,7 @@ async function markPaid(b, btn) {
   const enc = encodeURIComponent;
   // Status col (N = 13, 0-indexed -> column N). Status range e.g. Bill Summary!N5
   const colLetter = colToLetter(C.STATUS);
-  const range = `${BILL_TAB}!${colLetter}${b.sheetRow}`;
+  const range = `${billTabName}!${colLetter}${b.sheetRow}`;
   try {
     await api(`${SHEET_ID}/values/${enc(range)}?valueInputOption=USER_ENTERED`, {
       method: 'PUT',
