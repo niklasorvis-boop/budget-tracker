@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1a3c5e">
+<title>Pay Period Budget</title>
+<link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Pay%20Period%20Budget%22,%22short_name%22:%22Budget%22,%22display%22:%22standalone%22,%22background_color%22:%22%231a3c5e%22,%22theme_color%22:%22%231a3c5e%22,%22start_url%22:%22.%22,%22icons%22:[{%22src%22:%22data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%20192%20192%27%3E%3Crect%20width=%27192%27%20height=%27192%27%20rx=%2742%27%20fill=%27%231a3c5e%27/%3E%3Ctext%20x=%2796%27%20y=%27130%27%20font-size=%27110%27%20text-anchor=%27middle%27%20fill=%27%23f5821f%27%20font-family=%27sans-serif%27%20font-weight=%27bold%27%3E$%3C/text%3E%3C/svg%3E%22,%22sizes%22:%22192x192%22,%22type%22:%22image/svg+xml%22}]}">
+<style>
+  :root {
+    --navy: #1a3c5e;
+    --navy-deep: #122b44;
+    --orange: #f5821f;
+    --green: #1f9d55;
+    --green-soft: #e6f4ec;
+    --ink: #1c2733;
+    --muted: #6b7a8a;
+    --line: #e3e9ef;
+    --bg: #f4f6f8;
+    --card: #ffffff;
+    --warn-bg: #fff4e8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  body { padding-bottom: env(safe-area-inset-bottom); }
+
+  header {
+    background: var(--navy);
+    color: #fff;
+    padding: calc(env(safe-area-inset-top) + 18px) 20px 18px;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .h-top { display: flex; justify-content: space-between; align-items: center; }
+  .brand { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: #9fb6cc; }
+  .h-title { font-size: 22px; font-weight: 700; margin-top: 2px; }
+  .icon-btn {
+    background: rgba(255,255,255,.12); border: none; color: #fff;
+    width: 38px; height: 38px; border-radius: 10px; font-size: 16px; cursor: pointer;
+  }
+  .icon-btn:active { background: rgba(255,255,255,.25); }
+
+  .period-band {
+    margin-top: 16px; background: var(--navy-deep);
+    border-radius: 14px; padding: 14px 16px;
+    display: flex; justify-content: space-between; align-items: flex-end;
+  }
+  .period-band .lbl { font-size: 12px; color: #9fb6cc; text-transform: uppercase; letter-spacing: .08em; }
+  .period-band .date { font-size: 18px; font-weight: 700; color: #fff; margin-top: 3px; }
+  .period-band .right { text-align: right; }
+  .period-band .amt { font-size: 22px; font-weight: 700; color: var(--orange); }
+  .period-band .amt small { font-size: 12px; color: #9fb6cc; font-weight: 500; display: block; }
+
+  main { padding: 16px; max-width: 560px; margin: 0 auto; }
+
+  .signin-wrap { text-align: center; padding: 64px 24px; }
+  .signin-wrap h2 { font-size: 20px; margin-bottom: 8px; }
+  .signin-wrap p { color: var(--muted); margin-bottom: 24px; line-height: 1.5; }
+  .btn-primary {
+    background: var(--orange); color: #fff; border: none; font-size: 16px; font-weight: 600;
+    padding: 14px 28px; border-radius: 12px; cursor: pointer;
+  }
+  .btn-primary:active { filter: brightness(.94); }
+
+  .section-h { font-size: 13px; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); margin: 22px 4px 10px; font-weight: 600; }
+  .section-h:first-child { margin-top: 4px; }
+
+  .card {
+    background: var(--card); border-radius: 14px; padding: 15px 16px; margin-bottom: 10px;
+    box-shadow: 0 1px 2px rgba(20,43,68,.06); border: 1px solid var(--line);
+    display: flex; align-items: center; gap: 14px;
+  }
+  .card.paid { background: var(--green-soft); border-color: #cfe8da; }
+  .card .body { flex: 1; min-width: 0; }
+  .card .name { font-size: 16px; font-weight: 600; }
+  .card.paid .name { color: var(--green); }
+  .card .meta { font-size: 13px; color: var(--muted); margin-top: 3px;
+    display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .tag { background: #eef2f6; color: #51606f; border-radius: 6px; padding: 2px 7px; font-size: 11px; }
+  .tag.split { background: var(--warn-bg); color: #b96712; }
+  .card .amt { font-size: 17px; font-weight: 700; white-space: nowrap; }
+
+  .pay-btn {
+    background: var(--orange); border: none; color: #fff; font-weight: 600; font-size: 13px;
+    padding: 9px 14px; border-radius: 10px; cursor: pointer; white-space: nowrap;
+  }
+  .pay-btn:active { filter: brightness(.94); }
+  .pay-btn:disabled { opacity: .5; }
+  .paid-mark { color: var(--green); font-weight: 700; font-size: 14px; white-space: nowrap;
+    display: flex; align-items: center; gap: 5px; }
+
+  .empty { text-align: center; color: var(--muted); padding: 40px 20px; font-size: 14px; }
+  .loader { text-align: center; padding: 50px; color: var(--muted); }
+  .spin { width: 26px; height: 26px; border: 3px solid var(--line); border-top-color: var(--orange);
+    border-radius: 50%; animation: r 0.8s linear infinite; margin: 0 auto 12px; }
+  @keyframes r { to { transform: rotate(360deg); } }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(80px);
+    background: var(--navy-deep); color: #fff; padding: 12px 20px; border-radius: 12px;
+    font-size: 14px; opacity: 0; transition: all .3s; z-index: 50; max-width: 90%;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast.err { background: #b5302b; }
+
+  @media (prefers-reduced-motion: reduce) { .spin { animation: none; } .toast { transition: none; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="h-top">
+    <div>
+      <div class="brand">Fortnightly</div>
+      <div class="h-title">Pay Period Budget</div>
+    </div>
+    <button class="icon-btn" id="refreshBtn" title="Refresh" style="display:none">&#x21bb;</button>
+  </div>
+  <div class="period-band" id="periodBand" style="display:none">
+    <div>
+      <div class="lbl">This pay period</div>
+      <div class="date" id="payDate">—</div>
+    </div>
+    <div class="right">
+      <div class="amt"><span id="remainingAmt">$0</span><small>still to pay</small></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div id="signin" class="signin-wrap">
+    <h2>Sign in to your budget</h2>
+    <p>Connect your Google account to load this pay period's bills straight from your sheet.</p>
+    <button class="btn-primary" id="signinBtn">Connect Google account</button>
+  </div>
+
+  <div id="loader" class="loader" style="display:none">
+    <div class="spin"></div>
+    Loading your bills…
+  </div>
+
+  <div id="content" style="display:none"></div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+const CLIENT_ID = '732917276433-qa4dgeo7soujvh4a8b1rmvtra8ioneon.apps.googleusercontent.com';
+const SHEET_ID  = '1SFr8NZFszPhdwQO7dSkZ3f3MfiYXL_53V7mowXdaCgo';
+const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
+const BILL_TAB = 'Bill Summary';
+const PERIOD_TAB = 'Pay Period View';
+
+// Column map (0-indexed) for Bill Summary
+const C = { ID:0, NAME:1, AMOUNT:2, CATEGORY:3, DUEDATE:4, STARTDATE:5, PAYMETHOD:6,
+  RECURRING:7, PAIDFROM:8, FREQUENCY:9, SPLIT:10, SPLITCOUNT:11, AMTPERSPLIT:12,
+  STATUS:13, CANCELLEDDATE:14, NOTES:15, DATEADDED:16 };
+
+let tokenClient, accessToken = null, billRows = [], headerOffset = 1;
+
+window.onload = () => {
+  const init = setInterval(() => {
+    if (window.google && google.accounts && google.accounts.oauth2) {
+      clearInterval(init);
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID, scope: SCOPES,
+        callback: (resp) => {
+          if (resp.error) { toast('Sign-in failed: ' + resp.error, true); return; }
+          accessToken = resp.access_token;
+          document.getElementById('signin').style.display = 'none';
+          document.getElementById('refreshBtn').style.display = 'block';
+          loadAll();
+        }
+      });
+    }
+  }, 100);
+};
+
+document.getElementById('signinBtn').onclick = () => tokenClient.requestAccessToken();
+document.getElementById('refreshBtn').onclick = () => loadAll();
+
+function api(path, opts = {}) {
+  return fetch('https://sheets.googleapis.com/v4/spreadsheets/' + path, {
+    ...opts,
+    headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json', ...(opts.headers||{}) }
+  }).then(async r => {
+    if (!r.ok) throw new Error((await r.json().catch(()=>({}))).error?.message || ('HTTP ' + r.status));
+    return r.json();
+  });
+}
+
+async function loadAll() {
+  show('loader'); hide('content'); hide('signin');
+  try {
+    const enc = encodeURIComponent;
+    const [bills, period] = await Promise.all([
+      api(`${SHEET_ID}/values/${enc(BILL_TAB)}`),
+      api(`${SHEET_ID}/values/${enc(PERIOD_TAB)}!B2`).catch(()=>({}))
+    ]);
+    const vals = bills.values || [];
+    headerOffset = 1; // row 1 is header
+    billRows = vals.slice(headerOffset).map((row, i) => ({ row, sheetRow: i + headerOffset + 1 }));
+
+    const pd = period.values?.[0]?.[0] || '';
+    document.getElementById('payDate').textContent = pd || 'Current';
+    document.getElementById('periodBand').style.display = 'flex';
+
+    render();
+  } catch (e) {
+    hide('loader');
+    toast('Could not load: ' + e.message, true);
+    show('signin');
+  }
+}
+
+function fmt(n) {
+  const v = parseFloat(String(n).replace(/[^0-9.\-]/g, '')) || 0;
+  return '$' + v.toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+}
+function num(n) { return parseFloat(String(n).replace(/[^0-9.\-]/g, '')) || 0; }
+
+function render() {
+  hide('loader');
+  const c = document.getElementById('content');
+  c.innerHTML = '';
+
+  const active = billRows.filter(b => (b.row[C.STATUS] || '').trim().toLowerCase() === 'active');
+  if (!active.length) {
+    c.innerHTML = '<div class="empty">No active bills found in the Bill Summary tab.</div>';
+    show('content');
+    document.getElementById('remainingAmt').textContent = '$0';
+    return;
+  }
+
+  // amount per bill (use per-split if split, else amount)
+  const billAmt = b => num(b.row[C.SPLIT]).toString().toLowerCase() === 'true' || /yes|true/i.test(b.row[C.SPLIT]||'')
+    ? (num(b.row[C.AMTPERSPLIT]) || num(b.row[C.AMOUNT])) : num(b.row[C.AMOUNT]);
+
+  const unpaid = active.filter(b => !isPaid(b));
+  const paid = active.filter(b => isPaid(b));
+  const remaining = unpaid.reduce((s, b) => s + billAmt(b), 0);
+  document.getElementById('remainingAmt').textContent = fmt(remaining);
+
+  if (unpaid.length) c.appendChild(sectionH('Due this period'));
+  unpaid.forEach(b => c.appendChild(billCard(b, billAmt(b), false)));
+
+  if (paid.length) c.appendChild(sectionH('Paid'));
+  paid.forEach(b => c.appendChild(billCard(b, billAmt(b), true)));
+
+  show('content');
+}
+
+function isPaid(b) { return /paid/i.test(b.row[C.STATUS] || '') && !/active/i.test(b.row[C.STATUS]||''); }
+
+function sectionH(t) { const d = document.createElement('div'); d.className = 'section-h'; d.textContent = t; return d; }
+
+function billCard(b, amt, paidState) {
+  const r = b.row;
+  const card = document.createElement('div');
+  card.className = 'card' + (paidState ? ' paid' : '');
+
+  const isSplit = /yes|true/i.test(r[C.SPLIT] || '');
+  const tags = [];
+  if (r[C.CATEGORY]) tags.push(`<span class="tag">${esc(r[C.CATEGORY])}</span>`);
+  if (r[C.PAYMETHOD]) tags.push(`<span class="tag">${esc(r[C.PAYMETHOD])}</span>`);
+  if (isSplit) tags.push(`<span class="tag split">Split ${esc(r[C.SPLITCOUNT]||'')}</span>`);
+
+  const due = r[C.DUEDATE] ? `Due ${esc(r[C.DUEDATE])}` : '';
+
+  card.innerHTML = `
+    <div class="body">
+      <div class="name">${esc(r[C.NAME] || 'Unnamed bill')}</div>
+      <div class="meta">${due ? `<span>${due}</span>` : ''}${tags.join('')}</div>
+    </div>
+    <div class="amt">${fmt(amt)}</div>
+  `;
+
+  const action = document.createElement('div');
+  if (paidState) {
+    action.innerHTML = '<span class="paid-mark">&#10003; Paid</span>';
+  } else {
+    const btn = document.createElement('button');
+    btn.className = 'pay-btn'; btn.textContent = 'Mark paid';
+    btn.onclick = () => markPaid(b, btn);
+    action.appendChild(btn);
+  }
+  card.appendChild(action);
+  return card;
+}
+
+async function markPaid(b, btn) {
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const enc = encodeURIComponent;
+  // Status col (N = 13, 0-indexed -> column N). Status range e.g. Bill Summary!N5
+  const colLetter = colToLetter(C.STATUS);
+  const range = `${BILL_TAB}!${colLetter}${b.sheetRow}`;
+  try {
+    await api(`${SHEET_ID}/values/${enc(range)}?valueInputOption=USER_ENTERED`, {
+      method: 'PUT',
+      body: JSON.stringify({ range, values: [['Paid']] })
+    });
+    b.row[C.STATUS] = 'Paid';
+    toast('Marked as paid');
+    render();
+  } catch (e) {
+    btn.disabled = false; btn.textContent = 'Mark paid';
+    toast('Save failed: ' + e.message, true);
+  }
+}
+
+function colToLetter(idx) { // 0-indexed -> A, B, ...
+  let s = '', n = idx;
+  do { s = String.fromCharCode(65 + (n % 26)) + s; n = Math.floor(n / 26) - 1; } while (n >= 0);
+  return s;
+}
+
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function show(id){ document.getElementById(id).style.display = id==='content'||id==='signin'?'block':'block'; }
+function hide(id){ document.getElementById(id).style.display = 'none'; }
+
+let toastT;
+function toast(msg, err) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show' + (err ? ' err' : '');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => t.className = 'toast' + (err?' err':''), 2600);
+}
+</script>
+</body>
+</html>
